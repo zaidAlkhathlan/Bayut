@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
+import numpy as np
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -22,23 +23,23 @@ class ModelInput(BaseModel):
     Price: float
     Area_m2: float
 
+# Preprocessing functionimport numpy as np
+
+import numpy as np
+
 def preprocessing(input_features: ModelInput):
-    """Applies preprocessing while keeping Type_encoding unchanged."""
+    # Force shape (1,3)
+    arr = np.array([[input_features.Type_encoding,
+                     input_features.Price,
+                     input_features.Area_m2]], dtype=float)
     
-    # Keep categorical feature unchanged
-    type_encoding = input_features.Type_encoding  
-
-    # Extract only numerical features for scaling
-    numeric_features = [input_features.Price, input_features.Area_m2]
+    # Transform all three (including Type_encoding)
+    scaled_arr = scaler.transform(arr)  # shape (1,3)
     
-    # Apply scaling to numerical features
-    scaled_numeric_features = scaler.transform([numeric_features])
+    # Overwrite the scaled Type_encoding column with the raw (unscaled) value
+    scaled_arr[0, 0] = input_features.Type_encoding
 
-    # Combine unscaled and scaled features
-    final_features = [type_encoding] + scaled_numeric_features.tolist()[0]
-
-    return final_features
-
+    return scaled_arr  # shape (1,3)
 
 # Prediction function
 def predict(model, data):
