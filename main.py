@@ -22,23 +22,23 @@ class ModelInput(BaseModel):
     Price: float
     Area_m2: float
 
-# Preprocessing function
 def preprocessing(input_features: ModelInput):
-    """Applies the same preprocessing steps as used during model training."""
+    """Applies preprocessing while keeping Type_encoding unchanged."""
     
-    dict_f = {
-        "Type_encoding": input_features.Type_encoding,
-        "Price": input_features.Price,
-        "Area_m2": input_features.Area_m2,
-    }
-    
-    # Convert dictionary values to a list in the correct order
-    features_list = [dict_f[key] for key in sorted(dict_f)]
-    
-    # Scale the input features using the trained scaler
-    scaled_features = scaler.transform([features_list])
+    # Keep categorical feature unchanged
+    type_encoding = input_features.Type_encoding  
 
-    return scaled_features
+    # Extract only numerical features for scaling
+    numeric_features = [input_features.Price, input_features.Area_m2]
+    
+    # Apply scaling to numerical features
+    scaled_numeric_features = scaler.transform([numeric_features])
+
+    # Combine unscaled and scaled features
+    final_features = [type_encoding] + scaled_numeric_features.tolist()[0]
+
+    return final_features
+
 
 # Prediction function
 def predict(model, data):
